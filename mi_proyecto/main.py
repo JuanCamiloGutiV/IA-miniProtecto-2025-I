@@ -1,5 +1,7 @@
 import pygame
 import networkx as nx
+import random
+import time
 
 # Dimensiones del laberinto (fila x columna)
 ROWS, COLS = 10, 10
@@ -29,6 +31,15 @@ maze_layout = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
+def change_walls(maze):
+    
+    for row in range(ROWS):
+        for col in range(COLS):
+            # Solo cambiar celdas que no sean la rata o el queso
+            if maze[row][col] != 'S' and maze[row][col] != 'G':
+                if random.random() < 0.1:
+                    maze[row][col] = 1 if maze[row][col] == 0 else 0  # Cambiar entre pared y pasaje
+                    
 def draw_maze(screen, maze, rata,queso):
     for row in range(ROWS):
         for col in range(COLS):
@@ -61,22 +72,32 @@ def main():
     clock = pygame.time.Clock()
     running = True
     
-    rata = pygame.image.load("rata.png")
+    rata = pygame.image.load("rata.png")  # Asegúrate de tener este archivo en la carpeta del proyecto
     rata = pygame.transform.scale(rata, (CELL_SIZE, CELL_SIZE))
     
-    queso = pygame.image.load("queso.png")
+    queso = pygame.image.load("queso.png")  # Asegúrate de tener este archivo en la carpeta del proyecto
     queso = pygame.transform.scale(queso, (CELL_SIZE, CELL_SIZE))
-
+    
+    last_change_time = time.time()  # Tiempo inicial para el cambio de paredes
+    change_interval = 5
+    # Bucle principal del juego
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         screen.fill(WHITE)
-        draw_maze(screen, maze_layout, rata,queso)
+ 
+        # funcion cooldown de cambio
+        if time.time() - last_change_time > change_interval:
+            change_walls(maze_layout)
+            last_change_time = time.time()  
+            
+        draw_maze(screen, maze_layout, rata, queso)
+
         pygame.display.flip()
         clock.tick(60)
-
+        
     pygame.quit()
 
 if __name__ == "__main__":
