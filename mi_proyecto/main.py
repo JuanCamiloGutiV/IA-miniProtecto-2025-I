@@ -122,6 +122,19 @@ def astar(maze, start, goal):
     return None
 
 
+# funcion movimiento del queso
+def move_goal(maze, rat_pos):
+    empty_cells = [(r, c) for r in range(ROWS) for c in range(COLS)
+                   if maze[r][c] == 0 and (r, c) != rat_pos]
+    if empty_cells:
+        r, c = random.choice(empty_cells)
+        # Limpia la posición anterior del queso
+        old_goal = find_position(maze, 'G')
+        if old_goal:
+            maze[old_goal[0]][old_goal[1]] = 0
+        maze[r][c] = 'G'
+        return (r, c)
+    return find_position(maze, 'G')
 
 # Dibuja el laberinto y la rata
 def draw_maze(screen, maze, rata_img, queso_img, rat_pos):
@@ -194,7 +207,10 @@ def main():
     goal_pos = find_position(maze_layout, 'G')
 
     last_change = time.time()
-    change_interval = 5
+    change_interval = 4
+    
+    last_goal_move = time.time()
+    goal_interval = 4
 
     # Parámetros de juego
     game_started = False
@@ -229,6 +245,12 @@ def main():
                 if current_time - last_change > change_interval:
                     change_walls(maze_layout, rat_pos, goal_pos)
                     last_change = current_time
+                    path = None
+                    step = 0
+                    
+                if current_time - last_goal_move > goal_interval:
+                    goal_pos = move_goal(maze_layout, rat_pos)
+                    last_goal_move = current_time
                     path = None
                     step = 0
 
