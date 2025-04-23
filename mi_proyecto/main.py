@@ -89,7 +89,38 @@ def bfs(maze, start, goal):
     return None
 
 
-# Búsqueda A* (falta implementarla)
+# Búsqueda A* 
+import heapq
+
+def heuristic(a, b):
+    # Distancia Manhattan
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def astar(maze, start, goal):
+    open_set = []
+    heapq.heappush(open_set, (0 + heuristic(start, goal), 0, start, [start]))  # f, g, nodo, camino
+    visited = set()
+
+    while open_set:
+        f, g, current, path = heapq.heappop(open_set)
+
+        if current == goal:
+            return path
+        if current in visited:
+            continue
+        visited.add(current)
+
+        r, c = current
+        for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < ROWS and 0 <= nc < COLS and maze[nr][nc] != 1:
+                next_pos = (nr, nc)
+                if next_pos not in visited:
+                    new_g = g + 1
+                    new_f = new_g + heuristic(next_pos, goal)
+                    heapq.heappush(open_set, (new_f, new_g, next_pos, path + [next_pos]))
+    return None
+
 
 
 # Dibuja el laberinto y la rata
