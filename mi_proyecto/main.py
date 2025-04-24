@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 from collections import deque
+import heapq
 
 # Dimensiones del laberinto (fila x columna)
 ROWS, COLS = 10, 10
@@ -88,10 +89,7 @@ def bfs(maze, start, goal):
                     queue.append((next_pos, path + [next_pos]))
     return None
 
-
 # Búsqueda A* 
-import heapq
-
 def heuristic(a, b):
     # Distancia Manhattan
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -120,7 +118,6 @@ def astar(maze, start, goal):
                     new_f = new_g + heuristic(next_pos, goal)
                     heapq.heappush(open_set, (new_f, new_g, next_pos, path + [next_pos]))
     return None
-
 
 # funcion movimiento del queso
 def move_goal(maze, rat_pos):
@@ -216,6 +213,8 @@ def main():
     game_started = False
     path = None
     step = 0
+    method_message = ""
+
 
     running = True
     while running:
@@ -227,11 +226,13 @@ def main():
             if e.type == pygame.QUIT:
                 running = False
             elif not game_started and e.type == pygame.MOUSEBUTTONDOWN:
-                if hover_button:
-                    game_started = True
                 for i, hover in enumerate(hover_selector):
                     if hover:
                         selected_idx = i
+
+                if hover_button:
+                    game_started = True
+                    method_message = f"Método {options[selected_idx]} ejecutándose..."
 
         screen.fill(WHITE)
         draw_selector(screen, font, options, selected_idx, rects, hover_selector)
@@ -240,6 +241,12 @@ def main():
         if not game_started:
             draw_button(screen, font, button_rect, hover_button)
         else:
+            # Mostrar el texto del método en el mismo lugar que el botón
+            pygame.draw.rect(screen, WHITE, button_rect)  # Borra el botón anterior
+            msg_surf = font.render(method_message, True, BLACK)
+            msg_rect = msg_surf.get_rect(center=button_rect.center)
+            screen.blit(msg_surf, msg_rect)
+
             current_time = time.time()
             if rat_pos != goal_pos:
                 if current_time - last_change > change_interval:
@@ -247,7 +254,7 @@ def main():
                     last_change = current_time
                     path = None
                     step = 0
-                    
+
                 if current_time - last_goal_move > goal_interval:
                     goal_pos = move_goal(maze_layout, rat_pos)
                     last_goal_move = current_time
